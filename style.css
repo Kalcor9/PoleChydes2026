@@ -1,102 +1,53 @@
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: sans-serif;
     background: radial-gradient(circle, #1a2a6c, #b21f1f);
-    color: white;
-    margin: 0;
-    padding: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    overflow: hidden;
+    color: white; margin: 0; padding: 10px;
+    display: flex; justify-content: center; align-items: center; min-height: 100vh;
 }
-
 .game-container {
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    padding: 20px;
-    border-radius: 20px;
-    width: 100%;
-    max-width: 450px;
-    text-align: center;
-    border: 2px solid gold;
+    background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
+    padding: 20px; border-radius: 20px; width: 100%; max-width: 450px;
+    text-align: center; border: 2px solid #f1c40f;
 }
 
-.word-display {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 20px 0;
+/* Модальное окно */
+.modal {
+    position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+}
+.modal-content {
+    background: #fff; color: #333; padding: 30px; border-radius: 15px; text-align: center;
+}
+.player-buttons button { margin: 5px; background: #e74c3c; }
+
+#current-player-display {
+    font-size: 20px; font-weight: bold; color: #f1c40f; margin-bottom: 10px;
+    padding: 5px; border: 1px solid #f1c40f; border-radius: 5px;
 }
 
+.word-display { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
 .letter-slot {
-    width: 40px;
-    height: 50px;
-    background: white;
-    color: #1a2a6c;
-    font-size: 24px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 5px;
-    box-shadow: 0 4px 0 #bdc3c7;
+    width: 35px; height: 45px; background: #fff; color: #1a2a6c;
+    font-size: 22px; font-weight: bold; display: flex; align-items: center;
+    justify-content: center; border-radius: 4px;
 }
 
 .wheel {
-    width: 120px;
-    height: 120px;
-    background: conic-gradient(#e74c3c, #f1c40f, #2ecc71, #3498db, #9b59b6, #e74c3c);
-    border-radius: 50%;
-    margin: 20px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: bold;
-    border: 6px solid gold;
-    cursor: pointer;
-    transition: transform 2s cubic-bezier(0.1, 0.7, 0.1, 1);
-    text-shadow: 1px 1px 2px black;
+    width: 100px; height: 100px; background: conic-gradient(#e74c3c, #f1c40f, #2ecc71, #3498db, #9b59b6);
+    border-radius: 50%; margin: 20px auto; display: flex; align-items: center;
+    justify-content: center; border: 5px solid gold; cursor: pointer;
+    transition: transform 2s cubic-bezier(0.1, 0.7, 0.1, 1); font-size: 12px;
 }
 
-.input-area {
-    margin: 20px 0;
+.score-panel {
+    display: flex; justify-content: space-around; margin-top: 20px;
+    background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px;
 }
+.player-score { font-size: 14px; }
+.active-score { color: #f1c40f; font-weight: bold; text-decoration: underline; }
 
-input {
-    width: 60px;
-    height: 50px;
-    font-size: 24px;
-    text-align: center;
-    border-radius: 10px;
-    border: none;
-    margin-right: 10px;
-}
+input { width: 50px; height: 45px; font-size: 20px; text-align: center; border-radius: 8px; border: none; }
+button { height: 45px; padding: 0 20px; background: #27ae60; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
 
-button {
-    height: 50px;
-    padding: 0 25px;
-    background: #27ae60;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-#restart-btn {
-    width: 100%;
-    background: #f39c12;
-    margin-top: 15px;
-}
-
-/* Снежинки */
-.snowflake {
-    position: fixed; top: -10%; color: white;
-    animation: fall 10s linear infinite;
-}
-@keyframes fall {
-    to { top: 110%; transform: rotate(360deg); }
-}
+.snowflake { position: fixed; top: -10%; animation: fall 10s linear infinite; z-index: -1; }
+@keyframes fall { to { top: 110%; transform: rotate(360deg); } }
