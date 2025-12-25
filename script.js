@@ -1,62 +1,85 @@
 const gameRounds = [
-    {
-        finalWord: "ЕЛЬ",
-        riddles: [
-            "Буква 1. Загадка: Гласная буква, с которой начинается слово 'Ежевика'?",
-            "Буква 2. Загадка: Прозрачные сосульки на крыше — это...? (Начинается на Л)",
-            "Буква 3. Загадка: Буква-знак, которая делает согласные мягкими?"
-        ]
-    },
-    {
-        finalWord: "ШАР",
-        riddles: [
-            "Буква 1. Загадка: Тёплый зимний аксессуар на голову? (Начинается на Ш)",
-            "Буква 2. Загадка: Цитрус, который едят на Новый год? (Начинается на А)",
-            "Буква 3. Загадка: У Деда Мороза в руках волшебный...? (Начинается на Р)"
-        ]
-    },
-    {
-        finalWord: "СНЕГ",
-        riddles: [
-            "Буква 1. Загадка: Внучка Деда Мороза? (Начинается на С)",
-            "Буква 2. Загадка: Праздник, который мы ждем? (Начинается на Н)",
-            "Буква 3. Загадка: Если вода замерзнет, получится...? (Начинается на Е)",
-            "Буква 4. Загадка: На чем горят новогодние огни? (Начинается на Г - Гирлянда)"
-        ]
-    }
+    { word: "МАНДАРИН", question: "Оранжевый символ Нового года?" },
+    { word: "СНЕГУРОЧКА", question: "Кто помогает Деду Морозу?" },
+    { word: "ГИРЛЯНДА", question: "Что светится на елке огоньками?" }
 ];
 
-let roundIdx = 0, letterIdx = 0, score = 0, canGuess = false, points = 0;
+let players = [];
+let currentPlayerIdx = 0;
+let roundIdx = 0;
+let pointsOnWheel = 0;
+let canGuess = false;
+let guessedLetters = [];
 
 const input = document.getElementById("letter-input");
 const status = document.getElementById("status-message");
 
+function initGame(num) {
+    // Создаем массив игроков
+    for (let i = 0; i < num; i++) {
+        players.push({ id: i + 1, score: 0 });
+    }
+    
+    document.getElementById("setup-screen").style.display = "none";
+    document.getElementById("main-game").style.display = "block";
+    
+    updateScorePanel();
+    loadRound();
+}
+
 function loadRound() {
-    letterIdx = 0; canGuess = false;
+    guessedLetters = [];
+    canGuess = false;
+    const round = gameRounds[roundIdx];
+    document.getElementById("question").innerText = `Раунд ${roundIdx + 1}: ${round.question}`;
+    
     const wordDiv = document.getElementById("word-display");
     wordDiv.innerHTML = "";
-    const round = gameRounds[roundIdx];
-    
-    for (let i = 0; i < round.finalWord.length; i++) {
+    for (let i = 0; i < round.word.length; i++) {
         const div = document.createElement("div");
         div.className = "letter-slot";
         div.id = "s-" + i;
         wordDiv.appendChild(div);
     }
-    document.getElementById("question").innerText = round.riddles[0];
+    updateTurnDisplay();
+}
+
+function updateTurnDisplay() {
+    document.getElementById("current-player-display").innerText = `Ход Игрока ${players[currentPlayerIdx].id}`;
+    updateScorePanel();
+}
+
+function updateScorePanel() {
+    const panel = document.getElementById("score-panel");
+    panel.innerHTML = "";
+    players.forEach((p, idx) => {
+        const div = document.createElement("div");
+        div.className = "player-score" + (idx === currentPlayerIdx ? " active-score" : "");
+        div.innerText = `Игрок ${p.id}: ${p.score}`;
+        panel.appendChild(div);
+    });
 }
 
 document.getElementById("wheel").addEventListener("click", () => {
     if (canGuess || roundIdx >= gameRounds.length) return;
+    
     const rot = Math.floor(Math.random() * 360) + 1440;
     document.getElementById("wheel").style.transform = `rotate(${rot}deg)`;
     status.innerText = "Барабан крутится...";
     
     setTimeout(() => {
-        points = [100, 300, 500, 1000][Math.floor(Math.random() * 4)];
-        status.innerText = `На барабане ${points}! Введите первую букву ответа:`;
-        canGuess = true;
-        input.focus();
+        const sectors = [100, 200, 300, 500, 0]; // 0 - Банкрот
+        pointsOnWheel = sectors[Math.floor(Math.random() * sectors.length)];
+        
+        if (pointsOnWheel === 0) {
+            status.innerText = `Банкрот! Игрок ${players[currentPlayerIdx].id} теряет очки и ход.`;
+            players[currentPlayerIdx].score = 0;
+            nextTurn();
+        } else {
+            status.innerText = `На барабане ${pointsOnWheel}! Ваша буква?`;
+            canGuess = true;
+            input.focus();
+        }
     }, 2000);
 });
 
@@ -65,32 +88,59 @@ function guessLetter() {
     input.value = "";
     if (!canGuess || !char) return;
 
-    if (char === gameRounds[roundIdx].finalWord[letterIdx]) {
-        document.getElementById("s-" + letterIdx).innerText = char;
-        score += points;
-        document.getElementById("score").innerText = score;
-        letterIdx++;
-        canGuess = false;
+    const word = gameRounds[roundIdx].word;
+    
+    if (guessedLetters.includes(char)) {
+        status.innerText = "Эту букву уже называли! Переход хода.";
+        nextTurn();
+        return;
+    }
 
-        if (letterIdx < gameRounds[roundIdx].finalWord.length) {
-            document.getElementById("question").innerText = gameRounds[roundIdx].riddles[letterIdx];
-            status.innerText = "Верно! Крутите барабан дальше.";
-        } else {
-            roundIdx++;
-            if (roundIdx < gameRounds.length) {
-                status.innerText = "Слово отгадано! Следующий раунд...";
-                setTimeout(loadRound, 2000);
-            } else {
-                status.innerHTML = "<strong>ВЫ ПОБЕДИЛИ! С НОВЫМ ГОДОМ! 🎉</strong>";
-                document.getElementById("wheel").style.display = "none";
-                document.getElementById("restart-btn").style.display = "block";
-            }
+    let found = false;
+    for (let i = 0; i < word.length; i++) {
+        if (word[i] === char) {
+            document.getElementById("s-" + i).innerText = char;
+            found = true;
         }
+    }
+
+    if (found) {
+        guessedLetters.push(char);
+        players[currentPlayerIdx].score += pointsOnWheel;
+        status.innerText = "Есть такая буква! Вы ходите снова.";
+        updateScorePanel();
+        checkWin();
     } else {
-        status.innerText = "Неверно! Попробуйте снова крутануть.";
-        canGuess = false;
+        status.innerText = "Нет такой буквы! Ход переходит дальше.";
+        nextTurn();
+    }
+    canGuess = false;
+}
+
+function nextTurn() {
+    currentPlayerIdx = (currentPlayerIdx + 1) % players.length;
+    canGuess = false;
+    setTimeout(updateTurnDisplay, 1000);
+}
+
+function checkWin() {
+    const word = gameRounds[roundIdx].word;
+    const slots = document.getElementsByClassName("letter-slot");
+    let allOpened = true;
+    for (let slot of slots) { if (slot.innerText === "") allOpened = false; }
+
+    if (allOpened) {
+        roundIdx++;
+        if (roundIdx < gameRounds.length) {
+            status.innerHTML = "<strong>Слово отгадано! Следующий раунд...</strong>";
+            setTimeout(loadRound, 2500);
+        } else {
+            const winner = [...players].sort((a,b) => b.score - a.score)[0];
+            status.innerHTML = `<strong>ПОБЕДА! Победил Игрок ${winner.id}! 🎉</strong>`;
+            document.getElementById("wheel").style.display = "none";
+            document.getElementById("restart-btn").style.display = "block";
+        }
     }
 }
 
 input.addEventListener("keypress", (e) => { if (e.key === "Enter") guessLetter(); });
-loadRound();
